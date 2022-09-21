@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/traductor-de-ensamblador/static/css/main.0d03a5d9.css",
+    "main.js": "/traductor-de-ensamblador/static/js/main.fdbdd592.js",
+    "static/js/787.113bbce5.chunk.js": "/traductor-de-ensamblador/static/js/787.113bbce5.chunk.js",
+    "index.html": "/traductor-de-ensamblador/index.html",
+    "main.0d03a5d9.css.map": "/traductor-de-ensamblador/static/css/main.0d03a5d9.css.map",
+    "main.fdbdd592.js.map": "/traductor-de-ensamblador/static/js/main.fdbdd592.js.map",
+    "787.113bbce5.chunk.js.map": "/traductor-de-ensamblador/static/js/787.113bbce5.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.0d03a5d9.css",
+    "static/js/main.fdbdd592.js"
+  ]
+}
