@@ -1,0 +1,69 @@
+.home__main-container{
+    background-color: #CFD2CF;
+    min-height: 95vh;
+    display: flex;
+    flex-direction: column;
+
+}
+
+.home__title{
+    margin: 1rem;
+}
+
+.home__upload-box{
+    margin: 1rem;
+    border-style: dashed;
+    min-height: 10rem;
+    max-width: 50vh;
+    padding: 5%;
+
+    & p{
+        color: #333533;
+        &:hover{
+            cursor: pointer;
+        }
+    }
+}
+
+.home__translate-button{
+    padding: 1rem;
+    min-height: 2rem;
+    max-width: 6rem;
+}
+
+.home__text-area{
+    display: flex;
+    
+}
+
+.home__file-content{
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.home__addresses{
+    margin-top: 2.1rem;
+}
+
+.home__file-content{
+    
+}
+
+.home__machine{
+    margin-left: 1rem;
+    margin-top: 2.1rem;
+}
+
+.home__line{
+    white-space: pre-wrap;
+}
+
+.home__tabsim-area{
+    margin: 1rem;
+}
+
+.home__translated-button{
+    margin: 2rem;
+    align-items: flex-end;
+}

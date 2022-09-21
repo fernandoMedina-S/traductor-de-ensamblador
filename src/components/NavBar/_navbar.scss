@@ -1,0 +1,31 @@
+.navbar__list-container{
+    display: flex;
+    list-style: none;
+    background-color: #23252b;
+    min-height: 5vh;
+    
+}
+
+.navbar__list-item{
+    padding: .8rem;
+    color: #dadada;
+    font-size: 1.5rem;
+    text-decoration: none;
+    & a{
+        &:link{
+            text-decoration: none;
+            color: #dadada;
+        }
+        &:visited{
+            text-decoration: none;
+            color: #dadada;
+        }
+    }
+}
+
+.navbar__list-explorar{
+    list-style: none;
+    height: 0;
+    overflow: hidden;
+    transition: all 0.3s;
+}
