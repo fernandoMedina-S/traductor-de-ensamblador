@@ -7,6 +7,14 @@ const mnemonics = {
     ASL: {starting: false, name: "Arithmetic Shift Left Memory", inherit: false, immediate: false, direct: false, extended: "78xxxx"},
     BCC: {starting: false, name: "Branch if Carry Cleared", inherit: false, immediate: false, direct: false, extended: false, relative: "24xxxx"},
     BGND: {starting: false, name: "Enter Background Debug Mode", inherit: "00", immediate: false, direct: false, extended: false},
+    EQU: {starting: false, name: "Save memory for variable", save: true, inherit: false, immediate: false, direct: false, extended: false},
+    START: {starting: false, name: "Line start", direction: "00", inherit: false, immediate: false, direct: false, extended: false},
+    ADDD: {starting: false, name: "Add Double Accumulator", inherit: false, immediate: "C3xxxx", direct: "D3xx", extended: "F3xxxx"},
+    DC: {starting: false, B: "00", W: "0000", inherit: false, immediate: false, direct: false, extended: false},
+    BSZ: {starting: false, name: "BLOCK STORAGE OF ZEROS", value: "00", inherit: false, immediate: false, direct: false, extended: false},
+    FILL: {starting: false, name: "FILL MEMORY", value: "xx", inherit: false, immediate: false, direct: false, extended: false},
+    FCC: {starting: false, name: "FORM CONSTANT CHARACTER STRING", one_argument: true, inherit: false, immediate: false, direct: false, extended: false},
+    FCB: {starting: false, name: "FORM CONSTANT BYTE", value: "xx", inherit: false, immediate: false, direct: false, extended: false},
     END: {starting: true},
 }
 
