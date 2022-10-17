@@ -15,6 +15,11 @@ const mnemonics = {
     FILL: {starting: false, name: "FILL MEMORY", value: "xx", inherit: false, immediate: false, direct: false, extended: false},
     FCC: {starting: false, name: "FORM CONSTANT CHARACTER STRING", one_argument: true, inherit: false, immediate: false, direct: false, extended: false},
     FCB: {starting: false, name: "FORM CONSTANT BYTE", value: "xx", inherit: false, immediate: false, direct: false, extended: false},
+    JMP: {starting: false, name: "Jump", inherit: false, immediate: false, direct: false, extended: "06xxxx", relative: false},
+    BNE: {starting: false, name: "Branch if Not Equal to Zero", inherit: false, immediate: false, direct: false, extended: false, relative: "26xx"},
+    LBNE: {starting: false, name: "Long Branch if Not Equal to Zero", inherit: false, immediate: false, direct: false, extended: false, relative: "1826xxxx"},
+    BCS: {starting: false, name: "Branch if Carry Set", inherit: false, immediate: false, direct: false, extended: false, relative: "25xx"},
+    IBEQ: {starting: false, name: "Increment and Branch if Equal to Zero", inherit: false, immediate: false, direct: false, extended: false, relative: "04xxxx"},
     END: {starting: true},
 }
 
@@ -22,6 +27,15 @@ export const bases = {
     "%": 2,
     "@": 8,
     "$": 16,
+}
+
+export const registerIBEQ = {
+    A: {positive: "80", negative: "90"},
+    B: {positive: "81", negative: "91"},
+    D: {positive: "84", negative: "94"},
+    X: {positive: "85", negative: "95"},
+    Y: {positive: "86", negative: "96"},
+    SP: {positive: "87", negative: "97"},
 }
 
 export default mnemonics;

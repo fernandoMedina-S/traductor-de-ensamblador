@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
-import mnemonics, { bases } from "../../util/mnemonics";
+import mnemonics, { bases, registerIBEQ } from "../../util/mnemonics";
 
 import Button from "@mui/material/Button";
 
@@ -12,13 +12,13 @@ const Home = () => {
   const [addresses, setAddresses] = useState([]);
   const [machineValues, setMachineValues] = useState([]);
 
-  const hexToDec = (num) =>{
+  const hexToDec = (num) => {
     let newNum = parseInt(num, 16);
     if ((newNum & 0x8000) > 0) {
       newNum = newNum - 0x10000;
-   }
-   return newNum;
-  }
+    }
+    return newNum;
+  };
 
   const findInTabsim = (label) => {
     let finalValue = "NANs";
@@ -53,42 +53,56 @@ const Home = () => {
     }
   };
 
-  const deleteFToShow = (num1) => {
+  const deleteFToShow = (num1, ext = false) => {
     let canContinue = true;
-    let num = num1.substring(2);
-    if(!num.startsWith("F") || num.length <= 2){
-      if(num.length === 1){
+    const numLen = ext ? 4 : 2;
+    let num = num1.substring(numLen);
+    if (!num.startsWith("F") || num.length <= 2) {
+      if (num.length === 1) {
         return num1.substring(0, 2) + "0" + num;
-      }else{
+      } else {
         return num1;
       }
-    }else{
-      while(canContinue){
-        if(num.startsWith("F") && num.length > 2){
+    } else {
+      while (canContinue) {
+        if (num.startsWith("F") && num.length > 2) {
           num = num.substring(1);
-        }else{
+        } else {
           canContinue = false;
         }
       }
 
-      return num1.substring(0, 2) + num;
+      return num1.substring(0, numLen) + num;
     }
-  }
+  };
 
   //TODO: Función que reciba el operador en hexadecimal y devuelva su modo de direccionamiento
   const operatorToMode = (operator) => {
-    const opInDec = hexToDec(operator)
-    if(opInDec >= -256 && opInDec <= 255){
+    const opInDec = hexToDec(operator);
+    //console.log(operator, ": ",  opInDec)
+    if (opInDec >= -256 && opInDec <= 255) {
       return "8";
-    }else if(opInDec >= -32767 && opInDec <= 32767){
+    } else if (opInDec >= -32767 && opInDec <= 32767) {
       return "16";
-    }else{
+    } else {
       return "Fuera de rango";
     }
   };
-  const concatMnemonic = (mnemonic, mode, operator) => {
-    let original = mnemonic[mode].substring(0, 2);
-    if (mnemonic[mode].length === 6 && operator.length < 4) {
+  const concatMnemonic = (mnemonic, mode, operator, register = "") => {
+    let original = "";
+    if (mnemonic["name"] === "Long Branch if Not Equal to Zero") {
+      original = mnemonic[mode].substring(0, 4);
+    } else {
+      original = mnemonic[mode].substring(0, 2);
+    }
+    if (register.length > 0) {
+      original = original + register;
+    }
+    if (
+      mnemonic[mode].length >= 6 &&
+      operator.length < 4 &&
+      mnemonic["name"] !== "Increment and Branch if Equal to Zero"
+    ) {
       const diff = 4 - operator.length;
       for (let i = 0; i < diff; i += 1) {
         original += "0";
@@ -97,7 +111,13 @@ const Home = () => {
     return original + operator;
   };
 
-  const lengthToMachine = (mnemonic, operator, mLength, mode) => {
+  const lengthToMachine = (
+    mnemonic,
+    operator,
+    mLength,
+    mode,
+    register = ""
+  ) => {
     switch (mode) {
       case "immediate":
         if (mLength <= 8 && mnemonic["immediate"]) {
@@ -110,16 +130,23 @@ const Home = () => {
       case "extended":
         return concatMnemonic(mnemonic, "extended", operator);
       case "relative":
-        return concatMnemonic(mnemonic, "relative", operator);
+        return concatMnemonic(mnemonic, "relative", operator, register);
       default:
         return "Error on mode";
     }
   };
 
+  const relativeSub = (dir, operator) => {
+    const decDir = hexToDec(dir);
+    const decOp = hexToDec(operator);
+    const newNum = decOp - decDir;
+    return operatorToHex(newNum);
+  };
+
   function ConvertStringToHex(str) {
     var arr = [];
     for (var i = 0; i < 1; i++) {
-           arr[i] = (str.charCodeAt(i).toString(16)).slice(-4);
+      arr[i] = str.charCodeAt(i).toString(16).slice(-4);
     }
     return arr;
   }
@@ -127,21 +154,31 @@ const Home = () => {
   const listToDC = (ls, type) => {
     let str = "";
     const formType = type === "W" ? 4 : 2;
-    ls.forEach((element)=>{
+    ls.forEach((element) => {
       str += formatTo4Bits(operatorToHex(element), formType) + " ";
-    })
-    return str.substring(0, str.length-1);
-  }
+    });
+    return str.substring(0, str.length - 1);
+  };
 
-  const toMachine = (mnemonic, operator) => {
+  const toMachine = (mnemonic, operator, register = "") => {
     let consulted = {};
-    if(mnemonic === "DC.B" || mnemonic === "DC.W"){
+    if (mnemonic === "DC.B" || mnemonic === "DC.W") {
       consulted = mnemonics["DC"];
-    }else{
+    } else {
       consulted = mnemonics[mnemonic];
     }
     let modOp = operator;
-    let opInHex = operatorToHex(operator);
+    let opInHex = "";
+    if (
+      mnemonic === "BNE" ||
+      mnemonic === "LBNE" ||
+      mnemonic === "BCS" ||
+      mnemonic === "IBEQ"
+    ) {
+      opInHex = modOp;
+    } else {
+      opInHex = operatorToHex(operator);
+    }
     let dir = operatorToMode(opInHex);
 
     if (consulted === undefined) {
@@ -162,40 +199,56 @@ const Home = () => {
       return lengthToMachine(consulted, opInHex, dir, "direct");
     } else if (dir <= 16 && consulted["extended"]) {
       return lengthToMachine(consulted, opInHex, dir, "extended");
-    } else if (dir <= 16 && consulted["relative"]) {
+    } else if (
+      dir <= 16 &&
+      consulted["relative"] &&
+      mnemonic !== "BNE" &&
+      mnemonic !== "IBEQ"
+    ) {
       return lengthToMachine(consulted, opInHex, dir, "relative");
-    }else if(mnemonic.startsWith("DC")){
+    } else if (dir <= 8 && mnemonic === "BNE") {
+      return lengthToMachine(consulted, opInHex, dir, "relative");
+    } else if (dir <= 16 && mnemonic === "LBNE") {
+      return lengthToMachine(consulted, opInHex, dir, "relative");
+    } else if (mnemonic === "IBEQ") {
+      let sign = registerIBEQ[register];
+      let reg = "";
+      if (hexToDec(operator) > 0) {
+        reg = sign["positive"];
+      } else {
+        reg = sign["negative"];
+      }
+      return lengthToMachine(consulted, opInHex, dir, "relative", reg);
+    } else if (mnemonic.startsWith("DC")) {
       const dcType = mnemonic.substring(3, 4);
-      if(operator === ""){
+      if (operator === "") {
         return consulted[dcType];
-      }else{
+      } else {
         const ops = dcOperator(operator);
         return listToDC(ops, dcType);
       }
-    }else if(mnemonic === "BSZ"){
+    } else if (mnemonic === "BSZ") {
       const zerosB = "00 ";
-      let repeated = zerosB.repeat(parseInt(operator))
-      return repeated.substring(0, repeated.length-1);
-    } else if(mnemonic === "FILL"){
+      let repeated = zerosB.repeat(parseInt(operator));
+      return repeated.substring(0, repeated.length - 1);
+    } else if (mnemonic === "FILL") {
       const ops = dcOperator(operator);
       let fValue = formatTo4Bits(ops[0], 2) + " ";
       let sValue = ops[1];
       let repeated = fValue.repeat(parseInt(sValue));
-      return repeated.substring(0, repeated.length-1);
-    }else if(mnemonic === "FCC"){
-      let arg = operator.substring(1, operator.length-1);
+      return repeated.substring(0, repeated.length - 1);
+    } else if (mnemonic === "FCC") {
+      let arg = operator.substring(1, operator.length - 1);
       let str = "";
-      for (let i = 0; i<arg.length; i++){
-        console.log(arg.length)
-        str+= ConvertStringToHex(arg[i])[0] + " ";
+      for (let i = 0; i < arg.length; i++) {
+        str += ConvertStringToHex(arg[i])[0] + " ";
       }
       return str.toUpperCase();
-    }else if(mnemonic === "START" || mnemonic === "EQU"){
+    } else if (mnemonic === "START" || mnemonic === "EQU") {
       return "00";
-    }else if(mnemonic === "FCB"){
+    } else if (mnemonic === "FCB") {
       return formatTo4Bits(operatorToHex(operator), 2);
-    }
-    else{
+    } else {
       return "Fuera de Rango";
     }
   };
@@ -223,7 +276,7 @@ const Home = () => {
     }
 
     const opMod = operatorToHex(operatorOriginal);
-    
+
     if (consulted === undefined) {
       return { value: "invalid", len: 0 };
     }
@@ -247,12 +300,12 @@ const Home = () => {
     } else if (opMod.length <= 4 && consulted["relative"]) {
       const value = consulted["relative"];
       return { value, len: value.length / 2 };
-    } else if(consulted["save"]){
+    } else if (consulted["save"]) {
       const value = consulted["save"];
-      return { value,  len: 0}
-    } else if(consulted["direction"]){
-      const value = consulted["direction"]
-      return { value, len: 0 }
+      return { value, len: 0 };
+    } else if (consulted["direction"]) {
+      const value = consulted["direction"];
+      return { value, len: 0 };
     } else if (immediate) {
       const value = findMode(consulted);
       return { value, len: value.length / 2 };
@@ -310,45 +363,48 @@ const Home = () => {
 
   const getLabelFromLine = (line, idx) => {
     const mnemIdx = line.indexOf("\t");
-    const complete  = getMnemonicFromLine(line);
-    if(complete["mnemonic"] === "EQU"){
-      console.log({ pos: complete["operator"], label: line.substring(0, mnemIdx) })
-      return { pos: complete["operator"], label: line.substring(0, mnemIdx) }
+    const complete = getMnemonicFromLine(line);
+    if (complete["mnemonic"] === "EQU") {
+      return {
+        pos: complete["operator"],
+        label: line.substring(0, mnemIdx),
+        EQU: true,
+      };
     }
-    return { pos: idx, label: line.substring(0, mnemIdx) };
+    return { pos: idx, label: line.substring(0, mnemIdx), EQU: false };
   };
 
-  const formatTo4Bits = (num, type=4) => {
+  const formatTo4Bits = (num, type = 4) => {
     let original = num;
     const numLen = original.length;
     const diff = type - numLen;
-      for (let i = 0; i < diff; i += 1) {
-        original = "0" + original;
-      }
+    for (let i = 0; i < diff; i += 1) {
+      original = "0" + original;
+    }
     return original;
-  }
+  };
 
   const dcOperator = (operator) => {
     let ops = [];
     let str = operator;
 
-    while(str.length > 0){
+    while (str.length > 0) {
       let subs = str.substring(0, 2);
-      if(subs.includes(",")){
+      if (subs.includes(",")) {
         subs = subs.substring(0, 1);
       }
       ops.push(subs);
       str = str.substring(2, str.length);
-      if(str.startsWith(",")){
+      if (str.startsWith(",")) {
         str = str.substring(1);
       }
     }
     return ops;
-  }
+  };
 
   const ASCIItoBytes = (operator) => {
-    return operator.substring(1, operator.length-1).length;
-  }
+    return operator.substring(1, operator.length - 1).length;
+  };
 
   const onRenderFile = () => {
     let previousLength = [];
@@ -364,58 +420,75 @@ const Home = () => {
       if (element["mnemonic"] === "ORG") {
         previousLength.push(operatorToHex(element["operator"]));
       } else {
-        
-        if(element["mnemonic"] === "START"){
+        if (element["mnemonic"] === "START") {
           previousLength.push("0000");
-        }else{
-          if(element["mnemonic"].substring(0, 2) === "DC"){
+        } else {
+          if (element["mnemonic"].substring(0, 2) === "DC") {
             let bitLen = mnemonics[element["mnemonic"].substring(0, 2)];
-            bitLen = bitLen[element["mnemonic"].substring(3, 4)]
-            if(element["operator"] === ""){
+            bitLen = bitLen[element["mnemonic"].substring(3, 4)];
+            if (element["operator"] === "") {
               const prev = previousLength[previousLength.length - 1];
-              previousLength.push(formatTo4Bits(sumAddressInHex(prev, (bitLen.length/2))))
-            }else{
+              previousLength.push(
+                formatTo4Bits(sumAddressInHex(prev, bitLen.length / 2))
+              );
+            } else {
               const prev = previousLength[previousLength.length - 1];
               const ops = dcOperator(element["operator"]);
-              previousLength.push(formatTo4Bits(sumAddressInHex(prev, (ops.length * bitLen.length / 2))))
+              previousLength.push(
+                formatTo4Bits(
+                  sumAddressInHex(prev, (ops.length * bitLen.length) / 2)
+                )
+              );
             }
-          }else if(element["mnemonic"] === "BSZ"){
+          } else if (element["mnemonic"] === "BSZ") {
             const prev = previousLength[previousLength.length - 1];
-            previousLength.push(formatTo4Bits(sumAddressInHex(prev, operatorToHex(element["operator"]))));
-          }else if(element["mnemonic"] === "FILL"){
+            previousLength.push(
+              formatTo4Bits(
+                sumAddressInHex(prev, operatorToHex(element["operator"]))
+              )
+            );
+          } else if (element["mnemonic"] === "FILL") {
             const prev = previousLength[previousLength.length - 1];
             const ops = dcOperator(element["operator"]);
-            previousLength.push(formatTo4Bits(sumAddressInHex(prev, operatorToHex(ops[1]))));
-          }else if(element["mnemonic"] === "FCC"){
+            previousLength.push(
+              formatTo4Bits(sumAddressInHex(prev, operatorToHex(ops[1])))
+            );
+          } else if (element["mnemonic"] === "FCC") {
             const prev = previousLength[previousLength.length - 1];
-            previousLength.push(formatTo4Bits(sumAddressInHex(prev, ASCIItoBytes(element["operator"]))));
-          }else if(element["mnemonic"] === "FCB"){
+            previousLength.push(
+              formatTo4Bits(
+                sumAddressInHex(prev, ASCIItoBytes(element["operator"]))
+              )
+            );
+          } else if (element["mnemonic"] === "FCB") {
             const prev = previousLength[previousLength.length - 1];
             previousLength.push(formatTo4Bits(sumAddressInHex(prev, "1")));
-          }else{
+          } else {
             const prev = previousLength[previousLength.length - 1];
             let line = preLength(element["mnemonic"], element["operator"]);
             let num = sumAddressInHex(prev, line["len"]);
-            if(num === "NAN"){
+            if (num === "NAN") {
               previousLength.push("0000");
-            }else{
+            } else {
               previousLength.push(formatTo4Bits(num));
             }
           }
-          
         }
       }
     });
     labels = labels.map((element) => {
-      return {
-        name: element["label"],
-        value: previousLength[Number(element["pos"]-1)],
-      };
+      if (element["EQU"]) {
+        return { name: element["label"], value: operatorToHex(element["pos"]) };
+      } else {
+        return {
+          name: element["label"],
+          value: previousLength[Number(element["pos"] - 1)],
+        };
+      }
     });
     previousLength.pop();
     setAddresses(previousLength);
     setTabsim(labels);
-    
   };
 
   const secondRev = () => {
@@ -423,14 +496,35 @@ const Home = () => {
       return getMnemonicFromLine(element);
     });
 
-    let machineCodes = mnemAndOps.map((element) => {
-      return toMachine(element["mnemonic"], element["operator"]);
+    let machineCodes = mnemAndOps.map((element, idx) => {
+      if (
+        element["mnemonic"] === "BNE" ||
+        element["mnemonic"] === "LBNE" ||
+        element["mnemonic"] === "BCS"
+      ) {
+        const addr = relativeSub(
+          addresses[idx],
+          operatorToHex(element["operator"])
+        );
+        return toMachine(element["mnemonic"], addr);
+      } else if (element["mnemonic"] === "IBEQ") {
+        const ops = dcOperator(element["operator"]);
+        const addr = relativeSub(addresses[idx], operatorToHex(ops[1]));
+        return toMachine(element["mnemonic"], addr, ops[0]);
+      } else {
+        return toMachine(element["mnemonic"], element["operator"]);
+      }
     });
-    console.log(machineCodes)
+
     machineCodes.shift();
-    const corrected = machineCodes.map((element)=>{
-      return deleteFToShow(element);
-    })
+    const corrected = machineCodes.map((element) => {
+      if (element.length >= 8) {
+        return deleteFToShow(element, true);
+      } else {
+        return deleteFToShow(element);
+      }
+    });
+    corrected.pop();
     setMachineValues(corrected);
   };
 
