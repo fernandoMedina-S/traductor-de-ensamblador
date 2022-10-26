@@ -4,6 +4,7 @@ const mnemonics = {
     ADCA: {starting: false, name: "Add with Carry to A", inherit: false, immediate: "89xx", direct: "99xx", extended: "B9xxxx"},
     ADCB: {starting: false, name: "Add with Carry to B", inherit: false, immediate: "C9xx", direct: "D9xx", extended: "F9xxxx"},
     ADDA: {starting: false, name: "Add without Carry to A", inherit: false, immediate: "8Bxx", direct: "9Bxx", extended: "BBxxxx"},
+    LDAA: {starting: false, name: "Load Accumulator A", inherit: false, immediate: "86xx", direct: "96xx", extended: "B6xxxx", indexed: "A6"},
     ASL: {starting: false, name: "Arithmetic Shift Left Memory", inherit: false, immediate: false, direct: false, extended: "78xxxx"},
     BCC: {starting: false, name: "Branch if Carry Cleared", inherit: false, immediate: false, direct: false, extended: false, relative: "24xxxx"},
     BGND: {starting: false, name: "Enter Background Debug Mode", inherit: "00", immediate: false, direct: false, extended: false},
@@ -18,6 +19,7 @@ const mnemonics = {
     JMP: {starting: false, name: "Jump", inherit: false, immediate: false, direct: false, extended: "06xxxx", relative: false},
     BNE: {starting: false, name: "Branch if Not Equal to Zero", inherit: false, immediate: false, direct: false, extended: false, relative: "26xx"},
     LBNE: {starting: false, name: "Long Branch if Not Equal to Zero", inherit: false, immediate: false, direct: false, extended: false, relative: "1826xxxx"},
+    IBNE: {starting: false, name: "Increment and Branch if Not Equal to Zero", inherit: false, immediate: false, direct: false, extended: false, relative: false},
     BCS: {starting: false, name: "Branch if Carry Set", inherit: false, immediate: false, direct: false, extended: false, relative: "25xx"},
     IBEQ: {starting: false, name: "Increment and Branch if Equal to Zero", inherit: false, immediate: false, direct: false, extended: false, relative: "04xxxx"},
     END: {starting: true},
@@ -36,6 +38,22 @@ export const registerIBEQ = {
     X: {positive: "85", negative: "95"},
     Y: {positive: "86", negative: "96"},
     SP: {positive: "87", negative: "97"},
+}
+
+export const registerIBNE = {
+    A: {positive: "04A0", negative: "04B0"},
+    B: {positive: "04A1", negative: "04B1"},
+    D: {positive: "04A4", negative: "04B4"},
+    X: {positive: "04A5", negative: "04B5"},
+    Y: {positive: "04A6", negative: "04B6"},
+    SP: {positive: "04A7", negative: "04B7"},
+}
+
+export const registerIDX = {
+    X: "00",
+    Y: "01",
+    SP: "10",
+    PC: "11",
 }
 
 export default mnemonics;
