@@ -211,7 +211,7 @@ const Home = () => {
 
   const toMachine = (mnemonic, operator, register = "") => {
     let operatorLDAA = "";
-    if (mnemonic === "LDAA") {
+    if (mnemonic === "LDAA" || mnemonic === "JMP") {
       operatorLDAA = divideOperatorsByComma(operator);
     }
     let consulted = {};
@@ -281,24 +281,24 @@ const Home = () => {
         const ops = dcOperator(operator);
         return listToDC(ops, dcType);
       }
-    } else if (mnemonic === "LDAA" && operatorLDAA.length > 1) {
+    } else if ((mnemonic === "LDAA" || mnemonic === "JMP") && operatorLDAA.length > 1) {
       if(operator.startsWith("[")){
         console.log("Fórmula 5")
-        return "A6" + formIDX5(operatorLDAA[0], operatorLDAA[1]);
+        return consulted["indexed"] + formIDX5(operatorLDAA[0], operatorLDAA[1]);
       }
       else if (parseInt(operatorLDAA[0]) >= -16 && parseInt(operatorLDAA[0]) <= 15) {
         console.log("Formula 1")
-        return "A6" + formIDX1(operatorLDAA[0], operatorLDAA[1]);
+        return consulted["indexed"] + formIDX1(operatorLDAA[0], operatorLDAA[1]);
 
       } else if (
         parseInt(operatorLDAA[0]) >= 16 &&
         parseInt(operatorLDAA[0]) <= 255
       ) {
         console.log("Fórmula 2")
-        return "A6" + formIDX2(operatorLDAA[0], operatorLDAA[1]);
+        return consulted["indexed"] + formIDX2(operatorLDAA[0], operatorLDAA[1]);
       } else if (parseInt(operatorLDAA[0]) >= 256) {
         console.log("Fórmula 3")
-        return "A6" + formIDX3(operatorLDAA[0], operatorLDAA[1]);
+        return consulted["indexed"] + formIDX3(operatorLDAA[0], operatorLDAA[1]);
       } else {
         console.log("xD")
       }
@@ -524,7 +524,7 @@ const Home = () => {
 
     mnemAndOps.map((element) => {
       let operator = "";
-      if (element["mnemonic"] === "LDAA") {
+      if (element["mnemonic"] === "LDAA" || element["mnemonic"] === "JMP") {
         operator = divideOperatorsByComma(element["operator"]);
       }
       if (element["mnemonic"] === "ORG") {
@@ -550,7 +550,7 @@ const Home = () => {
                 )
               );
             }
-          } else if (element["mnemonic"] === "LDAA" && operator.length > 1) {
+          } else if ((element["mnemonic"] === "LDAA" || element["mnemonic"] === "JMP") && operator.length > 1) {
             const prev = previousLength[previousLength.length - 1];
             
             if(element["operator"].startsWith("[")){

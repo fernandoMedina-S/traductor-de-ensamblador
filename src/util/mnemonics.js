@@ -16,7 +16,7 @@ const mnemonics = {
     FILL: {starting: false, name: "FILL MEMORY", value: "xx", inherit: false, immediate: false, direct: false, extended: false},
     FCC: {starting: false, name: "FORM CONSTANT CHARACTER STRING", one_argument: true, inherit: false, immediate: false, direct: false, extended: false},
     FCB: {starting: false, name: "FORM CONSTANT BYTE", value: "xx", inherit: false, immediate: false, direct: false, extended: false},
-    JMP: {starting: false, name: "Jump", inherit: false, immediate: false, direct: false, extended: "06xxxx", relative: false},
+    JMP: {starting: false, name: "Jump", inherit: false, immediate: false, direct: false, extended: "06xxxx", relative: false, indexed: "05"},
     BNE: {starting: false, name: "Branch if Not Equal to Zero", inherit: false, immediate: false, direct: false, extended: false, relative: "26xx"},
     LBNE: {starting: false, name: "Long Branch if Not Equal to Zero", inherit: false, immediate: false, direct: false, extended: false, relative: "1826xxxx"},
     IBNE: {starting: false, name: "Increment and Branch if Not Equal to Zero", inherit: false, immediate: false, direct: false, extended: false, relative: false},
