@@ -5,8 +5,10 @@ const mnemonics = {
     ADCB: {starting: false, name: "Add with Carry to B", inherit: false, immediate: "C9xx", direct: "D9xx", extended: "F9xxxx"},
     ADDA: {starting: false, name: "Add without Carry to A", inherit: false, immediate: "8Bxx", direct: "9Bxx", extended: "BBxxxx"},
     LDAA: {starting: false, name: "Load Accumulator A", inherit: false, immediate: "86xx", direct: "96xx", extended: "B6xxxx", indexed: "A6"},
-    ASL: {starting: false, name: "Arithmetic Shift Left Memory", inherit: false, immediate: false, direct: false, extended: "78xxxx"},
-    BCC: {starting: false, name: "Branch if Carry Cleared", inherit: false, immediate: false, direct: false, extended: false, relative: "24xxxx"},
+    ASL: {starting: false, name: "Arithmetic Shift Left Memory", inherit: false, immediate: false, direct: false, extended: "78xxxx", indexed: "68"},
+    CLR: {starting: false, name: "Branch if Carry Cleared", inherit: false, immediate: false, direct: false, extended: "79xxxx", relative: false},
+    CMPA: {starting: false, name: "Compare A", inherit: false, immediate: "81xx", direct: "91xx", extended: "B1xxxx", relative: false, indexed: "A1"},
+    BCC: {starting: false, name: "Clear Memory", inherit: false, immediate: false, direct: false, extended: false, relative: "24xxxx"},
     BGND: {starting: false, name: "Enter Background Debug Mode", inherit: "00", immediate: false, direct: false, extended: false},
     EQU: {starting: false, name: "Save memory for variable", save: true, inherit: false, immediate: false, direct: false, extended: false},
     START: {starting: false, name: "Line start", direction: "00", inherit: false, immediate: false, direct: false, extended: false},
@@ -54,6 +56,12 @@ export const registerIDX = {
     Y: "01",
     SP: "10",
     PC: "11",
+}
+
+export const registerArgIDX = {
+    A: "00",
+    B: "01",
+    D: "10"
 }
 
 export default mnemonics;
