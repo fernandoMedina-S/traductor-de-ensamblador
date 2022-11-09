@@ -346,7 +346,6 @@ const Home = () => {
     ) {
       return lengthToMachine(consulted, opInHex, dir, "relative");
     } else if (dir <= 8 && mnemonic === "BNE") {
-      console.log("BNE", operator)
       return lengthToMachine(consulted, opInHex, dir, "relative");
     } else if (dir <= 16 && mnemonic === "LBNE") {
       return lengthToMachine(consulted, opInHex, dir, "relative");
@@ -394,6 +393,9 @@ const Home = () => {
           operatorLDAA[1].endsWith("+") ||
           operatorLDAA[1].endsWith("-"))
       ) {
+        if(extractReg(operatorLDAA[1])  === "PC"){
+          return "Fuera de rango";
+        }
         return (
           consulted["indexed"] + formIDX8(operatorLDAA[0], operatorLDAA[1])
         );
@@ -428,16 +430,15 @@ const Home = () => {
       }
       return "FRDR";
     } else if (mnemonic === "IBNE") {
-      console.log(opInHex)
       const sign = hexToDec(opInHex) >= 0 ? "positive" : "negative";
       const mCode = registerIBNE[register];
       if (mCode === undefined) {
         return "Fuera de rango";
       }
       const reg = mCode[sign];
-
       if (hexToDec(opInHex) >= -256 && hexToDec(opInHex) <= 255) {
-        return reg + opInHex.substring(opInHex.length - 2);
+        console.log(formatTo4Bits(opInHex, 2))
+        return reg + formatTo4Bits(opInHex, 2);
       } else {
         return "Fuera de rango";
       }
@@ -790,7 +791,6 @@ const Home = () => {
       if (element["mnemonic"] === "IBNE") {
         const ops = divideOperatorsByComma(element["operator"]);
         let addr = relativeSub(addresses[idx], operatorToHex(ops[1]));
-        console.log(addr)
         return toMachine(element["mnemonic"], addr, ops[0]);
       }
       if (
